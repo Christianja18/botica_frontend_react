@@ -106,11 +106,15 @@ export async function loadBoticaData(): Promise<BoticaData> {
     safeFetch('backups', fetchBackups, unavailableTables),
   ])
 
+  const authEmail = userData.user?.email?.toLowerCase() ?? ''
   const currentUsuario = usuarios
     .map(mapUsuario)
     .find((usuario) => {
       const source = usuarios.find((row) => row.id_usuario === usuario.idUsuario)
-      return source?.auth_user_id === userData.user?.id
+      return (
+        source?.auth_user_id === userData.user?.id ||
+        usuario.email.toLowerCase() === authEmail
+      )
     }) ?? null
 
   return {

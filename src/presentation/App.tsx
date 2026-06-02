@@ -257,9 +257,14 @@ function App() {
     setCart((currentCart) => currentCart.filter((item) => item.idProducto !== idProducto))
   }
 
+  function changeView(viewId: ViewId) {
+    setActiveView(viewId)
+    setToast(null)
+  }
+
   async function completeSale() {
     if (cart.length === 0) {
-      setToast({ tone: 'warning', message: 'Agrega productos antes de completar la venta.' })
+      setToast({ tone: 'warning', message: 'Selecciona al menos un producto en Ventas para completar la venta.' })
       return
     }
 
@@ -556,7 +561,7 @@ function App() {
               key={item.id}
               className={visibleView === item.id ? 'nav-item is-active' : 'nav-item'}
               type="button"
-              onClick={() => setActiveView(item.id)}
+              onClick={() => changeView(item.id)}
               aria-current={visibleView === item.id ? 'page' : undefined}
             >
               <Icon name={item.icon} />
