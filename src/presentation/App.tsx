@@ -161,20 +161,10 @@ function App() {
       setUnavailableFunctions(data.unavailableFunctions)
       setSelectedClientId(data.clientes[0]?.idCliente ?? 0)
 
-      if (data.unavailableTables.length > 0) {
+      if (!data.currentUsuario && !data.unavailableTables.includes('usuarios')) {
         setToast({
           tone: 'warning',
-          message: `Modulos desactivados porque faltan tablas en Supabase: ${data.unavailableTables.join(', ')}.`,
-        })
-      } else if (data.unavailableFunctions.length > 0) {
-        setToast({
-          tone: 'warning',
-          message: `Migracion pendiente: falta la funcion ${data.unavailableFunctions.join(', ')}.`,
-        })
-      } else if (!data.currentUsuario) {
-        setToast({
-          tone: 'warning',
-          message: 'Sesion valida, pero no hay usuario interno vinculado a auth_user_id.',
+          message: 'Sesion iniciada, pero este correo no esta vinculado a un usuario interno.',
         })
       }
     } catch (error) {
@@ -578,14 +568,8 @@ function App() {
         <div className="sidebar-status">
           <span className="status-dot" />
           <div>
-            <strong>{unavailableTables.length > 0 ? 'Modulos omitidos' : 'RLS activo'}</strong>
-            <span>
-              {unavailableTables.length > 0
-                ? `${unavailableTables.length} tablas pendientes`
-                : unavailableFunctions.length > 0
-                  ? 'RPC pendiente'
-                  : 'Policies por rol'}
-            </span>
+            <strong>RLS activo</strong>
+            <span>{unavailableFunctions.length > 0 ? 'Auth sin RPC' : 'Policies por rol'}</span>
           </div>
         </div>
       </aside>
@@ -604,7 +588,7 @@ function App() {
               <span>{displayInitials}</span>
               <div>
                 <strong>{displayUser}</strong>
-                <small>{currentUsuario ? 'Perfil interno activo' : 'Auth sin perfil'}</small>
+                <small>{currentUsuario ? 'Perfil interno activo' : 'Usuario no vinculado'}</small>
               </div>
             </div>
             <button className="secondary-button" type="button" onClick={() => authUseCases.signOut()}>
