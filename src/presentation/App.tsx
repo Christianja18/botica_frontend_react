@@ -49,7 +49,7 @@ const currencyFormatter = new Intl.NumberFormat('es-PE', {
 const numberFormatter = new Intl.NumberFormat('es-PE')
 
 const navItems: ReadonlyArray<{ id: ViewId; label: string; icon: IconName }> = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { id: 'dashboard', label: 'Inicio', icon: 'dashboard' },
   { id: 'ventas', label: 'Ventas', icon: 'sales' },
   { id: 'pedidos', label: 'Pedidos', icon: 'orders' },
   { id: 'detalles-pedido', label: 'Detalles', icon: 'ticket' },
@@ -62,7 +62,7 @@ const navItems: ReadonlyArray<{ id: ViewId; label: string; icon: IconName }> = [
   { id: 'reportes', label: 'Reportes', icon: 'reports' },
   { id: 'roles', label: 'Roles', icon: 'roles' },
   { id: 'usuarios', label: 'Usuarios', icon: 'users' },
-  { id: 'backups', label: 'Backups', icon: 'backup' },
+  { id: 'backups', label: 'Respaldos', icon: 'backup' },
 ]
 
 const viewRequiredTables: Record<ViewId, ReadonlyArray<BoticaTableName>> = {
@@ -228,7 +228,7 @@ function App() {
 
     const currentQuantity = cart.find((item) => item.idProducto === idProducto)?.cantidad ?? 0
     if (currentQuantity + 1 > stock.stockActual) {
-      setToast({ tone: 'warning', message: 'Stock insuficiente para agregar otra unidad.' })
+      setToast({ tone: 'warning', message: 'Existencias insuficientes para agregar otra unidad.' })
       return
     }
 
@@ -427,7 +427,7 @@ function App() {
     try {
       await boticaUseCases.updateStock(idProducto, Math.max(0, draft))
       await refreshData()
-      setToast({ tone: 'success', message: 'Stock actualizado.' })
+      setToast({ tone: 'success', message: 'Existencias actualizadas.' })
     } catch (error) {
       setToast({ tone: 'error', message: getErrorMessage(error) })
     }
@@ -499,7 +499,7 @@ function App() {
 
   async function generateBackup(tipo: BackupTipo) {
     if (!currentUsuario) {
-      setToast({ tone: 'error', message: 'No hay usuario interno vinculado para registrar backups.' })
+      setToast({ tone: 'error', message: 'No hay usuario interno vinculado para registrar respaldos.' })
       return
     }
 
@@ -519,7 +519,7 @@ function App() {
         generadoPor: currentUsuario.idUsuario,
       })
       await refreshData()
-      setToast({ tone: 'success', message: 'Backup registrado.' })
+      setToast({ tone: 'success', message: 'Respaldo registrado.' })
     } catch (error) {
       setToast({ tone: 'error', message: getErrorMessage(error) })
     }
@@ -527,7 +527,7 @@ function App() {
 
   const availableNavItems = navItems.filter((item) => isViewAvailable(item.id, unavailableTables))
   const visibleView = isViewAvailable(activeView, unavailableTables) ? activeView : 'dashboard'
-  const activeLabel = availableNavItems.find((item) => item.id === visibleView)?.label ?? 'Dashboard'
+  const activeLabel = availableNavItems.find((item) => item.id === visibleView)?.label ?? 'Inicio'
   const sessionEmail = session?.user.email ?? 'usuario@botica.com'
   const displayUser = currentUsuario
     ? `${currentUsuario.nombre} ${currentUsuario.apellido}`
@@ -548,11 +548,7 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar" aria-label="Navegacion principal">
         <div className="brand">
-          <span className="brand-mark">B</span>
-          <div>
-            <strong>Botica</strong>
-            <span>Supabase</span>
-          </div>
+          <BrandLogo variant="sidebar" />
         </div>
 
         <nav className="nav-list">
@@ -574,7 +570,7 @@ function App() {
           <span className="status-dot" />
           <div>
             <strong>RLS activo</strong>
-            <span>{unavailableFunctions.length > 0 ? 'Auth sin RPC' : 'Policies por rol'}</span>
+            <span>{unavailableFunctions.length > 0 ? 'Autenticacion pendiente' : 'Politicas por rol'}</span>
           </div>
         </div>
       </aside>
@@ -744,13 +740,7 @@ function AuthShell({ title, detail }: { title: string; detail: string }) {
   return (
     <main className="auth-screen">
       <section className="auth-card">
-        <div className="brand auth-brand">
-          <span className="brand-mark">B</span>
-          <div>
-            <strong>Botica</strong>
-            <span>Supabase</span>
-          </div>
-        </div>
+        <BrandLogo variant="auth" />
         <h1>{title}</h1>
         <p>{detail}</p>
       </section>
@@ -784,19 +774,13 @@ function SignInView() {
   return (
     <main className="auth-screen">
       <section className="auth-card">
-        <div className="brand auth-brand">
-          <span className="brand-mark">B</span>
-          <div>
-            <strong>Botica</strong>
-            <span>Supabase</span>
-          </div>
-        </div>
+        <BrandLogo variant="auth" />
         <h1>Ingresar al panel</h1>
-        <p>Usa el email registrado en usuarios y su password de Supabase Auth.</p>
+        <p>Usa el correo registrado en usuarios y su contrasena de Supabase.</p>
 
         <form className="auth-form" onSubmit={signIn}>
           <label>
-            Email
+            Correo
             <input
               value={email}
               type="email"
@@ -812,7 +796,7 @@ function SignInView() {
             </datalist>
           </label>
           <label>
-            Password
+            Contrasena
             <input
               value={password}
               type="password"
@@ -830,7 +814,7 @@ function SignInView() {
         <div className="auth-note">
           <strong>Requisito RLS</strong>
           <span>
-            Al ingresar, la app vincula el UUID de Auth con <code>usuarios.auth_user_id</code> por email.
+            Al ingresar, la app vincula el usuario de autenticacion con el correo interno registrado.
           </span>
         </div>
       </section>
@@ -868,7 +852,7 @@ function DashboardView({
       <div className="metric-grid">
         <MetricCard title="Ventas completadas" value={formatCurrency(ventasTotal)} detail={`${pedidos.filter((pedido) => pedido.estado === 'completado').length} pedidos`} icon="sales" tone="green" />
         <MetricCard title="Productos activos" value={numberFormatter.format(productos.length)} detail={`${numberFormatter.format(totalStock)} unidades`} icon="products" tone="blue" />
-        <MetricCard title="Stock bajo" value={numberFormatter.format(inventarioBajo.length)} detail="Requiere reposicion" icon="warning" tone="amber" />
+        <MetricCard title="Existencias bajas" value={numberFormatter.format(inventarioBajo.length)} detail="Requiere reposicion" icon="warning" tone="amber" />
         <MetricCard title="Clientes" value={numberFormatter.format(clientes.length)} detail={`${usuarios.length} usuarios internos`} icon="clients" tone="slate" />
       </div>
 
@@ -914,7 +898,7 @@ function DashboardView({
                       <div>
                         <strong>{producto?.nombre ?? 'Producto'}</strong>
                         <span>
-                          Stock {item.stockActual} / minimo {item.stockMinimo}
+                          Existencias {item.stockActual} / minimo {item.stockMinimo}
                         </span>
                       </div>
                     </div>
@@ -1035,7 +1019,7 @@ function VentasView({
                   </span>
                   <span>
                     {formatCurrency(producto.precioVenta)}
-                    <small>Stock {stock?.stockActual ?? 0}</small>
+                    <small>Existencias {stock?.stockActual ?? 0}</small>
                   </span>
                 </button>
               )
@@ -1413,11 +1397,11 @@ function ProductosView({
             <input name="fechaVencimiento" required type="date" />
           </label>
           <label>
-            Stock inicial
+            Existencias iniciales
             <input name="stockInicial" required min="0" type="number" defaultValue={0} />
           </label>
           <label>
-            Stock minimo
+            Existencias minimas
             <input name="stockMinimo" required min="0" type="number" defaultValue={10} />
           </label>
           <label className="checkbox-field">
@@ -1440,7 +1424,7 @@ function ProductosView({
                 <th>Categoria</th>
                 <th>Proveedor</th>
                 <th>Venta</th>
-                <th>Stock</th>
+                <th>Existencias</th>
                 <th>Vencimiento</th>
               </tr>
             </thead>
@@ -1589,7 +1573,7 @@ function ClientesView({
             <input name="telefono" required maxLength={9} pattern="[0-9]{9}" />
           </label>
           <label className="span-2">
-            Email
+            Correo
             <input name="email" required type="email" />
           </label>
           <button className="primary-button" type="submit">
@@ -1693,7 +1677,7 @@ function ProveedoresView({
             <input name="telefono" required maxLength={9} pattern="[0-9]{9}" />
           </label>
           <label>
-            Email
+            Correo
             <input name="email" required type="email" />
           </label>
           <label className="span-2">
@@ -1715,7 +1699,7 @@ function ProveedoresView({
                 <th>Proveedor</th>
                 <th>RUC</th>
                 <th>Telefono</th>
-                <th>Email</th>
+                <th>Correo</th>
                 <th>Direccion</th>
               </tr>
             </thead>
@@ -1886,13 +1870,13 @@ function UsuariosView({ usuarios, roles }: { usuarios: Usuario[]; roles: Rol[] }
         ))}
       </div>
 
-      <Panel title="Usuarios internos" action="Auth vinculado por uuid">
+      <Panel title="Usuarios internos" action="Autenticacion vinculada">
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Usuario</th>
-                <th>Email</th>
+                <th>Correo</th>
                 <th>Rol</th>
                 <th>Estado</th>
               </tr>
@@ -1935,7 +1919,7 @@ function BackupsView({
     <section className="content-stack">
       <div className="report-grid">
         <button className="report-card" type="button" onClick={() => onGenerateBackup('completo')}>
-          <span>Backup completo</span>
+          <span>Respaldo completo</span>
           <strong>SQL</strong>
           <small>Registrar exportacion completa</small>
         </button>
@@ -1946,7 +1930,7 @@ function BackupsView({
         </button>
       </div>
 
-      <Panel title="Historial de backups" action={`${backups.length} registros`}>
+      <Panel title="Historial de respaldos" action={`${backups.length} registros`}>
         <div className="table-wrap">
           <table>
             <thead>
@@ -2033,6 +2017,18 @@ function StatusBadge({ status }: { status: PedidoEstado }) {
 
 function StatusPill({ label }: { label: string }) {
   return <span className="status-pill">{label}</span>
+}
+
+function BrandLogo({ variant }: { variant: 'auth' | 'sidebar' }) {
+  return (
+    <div className={`brand-logo-frame brand-logo-frame-${variant}`}>
+      <img
+        className="brand-logo"
+        src="/josue-farma-logo.svg"
+        alt="Botiquin y Bazar Josue Farma"
+      />
+    </div>
+  )
 }
 
 function DateBadge({ date }: { date: string }) {
